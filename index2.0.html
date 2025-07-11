@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronómetro de Boxeo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            color: white;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        .settings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            background: rgba(30, 30, 40, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .setting-group {
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #444;
+            border-radius: 5px;
+            background: #222;
+            color: white;
+            font-size: 1.1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            border-color: #ffd700;
+            outline: none;
+        }
+        
+        .timer-display {
+            font-size: 5rem;
+            font-weight: bold;
+            margin: 30px 0;
+            color: white;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .round-info {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            color: #ffd700;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        #startBtn {
+            background: linear-gradient(to right, #4CAF50, #2E7D32);
+            color: white;
+        }
+        
+        #pauseBtn {
+            background: linear-gradient(to right, #FF9800, #EF6C00);
+            color: white;
+        }
+        
+        #resetBtn {
+            background: linear-gradient(to right, #f44336, #c62828);
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .combination-alert {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ff5252;
+            height: 60px;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 82, 82, 0.7);
+            animation: pulse 0.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { opacity: 0.5; transform: scale(1); }
+            to { opacity: 1; transform: scale(1.05); }
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        .fighting { background-color: #4CAF50; box-shadow: 0 0 10px #4CAF50; }
+        .resting { background-color: #FF9800; box-shadow: 0 0 10px #FF9800; }
+        .completed { background-color: #f44336; box-shadow: 0 0 10px #f44336; }
+        
+        .instructions {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(30, 30, 40, 0.6);
+            border-radius: 10px;
+            text-align: left;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .instructions h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 600px) {
+            .settings {
+                grid-template-columns: 1fr;
+            }
+            
+            .timer-display {
+                font-size: 3.5rem;
+            }
+            
+            button {
+                padding: 12px 20px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cronómetro de Boxeo</h1>
+        
+        <div class="settings">
+            <div class="setting-group">
+                <label for="roundTime">Tiempo de Asalto (segundos):</label>
+                <input type="number" id="roundTime" min="1" value="180">
+            </div>
+            
+            <div class="setting-group">
+                <label for="restTime">Tiempo de Descanso (segundos):</label>
+                <input type="number" id="restTime" min="1" value="60">
+            </div>
+            
+            <div class="setting-group">
+                <label for="numRounds">Número de Asaltos:</label>
+                <input type="number" id="numRounds" min="1" value="3">
+            </div>
+            
+            <div class="setting-group">
+                <label for="comboInterval">Intervalo Combinación (segundos):</label>
+                <input type="number" id="comboInterval" min="1" value="3">
+            </div>
+        </div>
+        
+        <div class="timer-display" id="timer">03:00</div>
+        
+        <div class="round-info">
+            <span id="roundDisplay">Asalto: 1/<span id="totalRounds">3</span></span>
+            <span class="status-indicator fighting" id="statusIndicator"></span>
+        </div>
+        
+        <div class="controls">
+            <button id="startBtn">Iniciar</button>
+            <button id="pauseBtn">Pausar</button>
+            <button id="resetBtn">Reiniciar</button>
+        </div>
+        
+        <div class="combination-alert" id="comboAlert"></div>
+        
+        <div class="instructions">
+            <h3>Instrucciones:</h3>
+            <p>1. Configura el tiempo de asalto, descanso, número de asaltos y el intervalo para combinaciones.</p>
+            <p>2. Haz clic en "Iniciar" para comenzar el cronómetro.</p>
+            <p>3. El cronómetro alternará automáticamente entre asaltos y descansos.</p>
+            <p>4. Durante los asaltos, cada <span id="intervalValue">3</span> segundos sonará un aviso para realizar una combinación de golpes.</p>
+            <p>5. Usa los botones "Pausar" y "Reiniciar" para controlar la sesión.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos del DOM
+            const timerDisplay = document.getElementById('timer');
+            const roundDisplay = document.getElementById('roundDisplay');
+            const totalRounds = document.getElementById('totalRounds');
+            const comboAlert = document.getElementById('comboAlert');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const intervalValue = document.getElementById('intervalValue');
+            
+            // Campos de configuración
+            const roundTimeInput = document.getElementById('roundTime');
+            const restTimeInput = document.getElementById('restTime');
+            const numRoundsInput = document.getElementById('numRounds');
+            const comboIntervalInput = document.getElementById('comboInterval');
+            
+            // Botones
+            const startBtn = document.getElementById('startBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            
+            // Variables del cronómetro
+            let timer;
+            let currentRound = 1;
+            let isRunning = false;
+            let isFighting = true; // true = asalto, false = descanso
+            let secondsLeft;
+            let comboCounter = 0;
+            
+            // Inicializar valores
+            updateTimerDisplay();
+            updateRoundDisplay();
+            
+            // Actualizar la información del intervalo
+            comboIntervalInput.addEventListener('input', function() {
+                intervalValue.textContent = this.value;
+            });
+            
+            // Iniciar el cronómetro
+            startBtn.addEventListener('click', startTimer);
+            
+            // Pausar el cronómetro
+            pauseBtn.addEventListener('click', pauseTimer);
+            
+            // Reiniciar el cronómetro
+            resetBtn.addEventListener('click', resetTimer);
+            
+            function startTimer() {
+                if (isRunning) return;
+                
+                isRunning = true;
+                startBtn.disabled = true;
+                
+                // Configurar el tiempo inicial
+                secondsLeft = isFighting ? parseInt(roundTimeInput.value) : parseInt(restTimeInput.value);
+                comboCounter = 0;
+                
+                updateTimerDisplay();
+                
+                timer = setInterval(() => {
+                    secondsLeft--;
+                    
+                    // Verificar si es momento de combinación durante el asalto
+                    if (isFighting) {
+                        comboCounter++;
+                        const comboInterval = parseInt(comboIntervalInput.value);
+                        
+                        if (comboCounter % comboInterval === 0 && secondsLeft > 0) {
+                            playComboSound();
+                            showComboAlert();
+                        }
+                    }
+                    
+                    // Verificar si el tiempo ha terminado
+                    if (secondsLeft <= 0) {
+                        playBellSound();
+                        
+                        if (isFighting) {
+                            // Cambiar a descanso
+                            isFighting = false;
+                            secondsLeft = parseInt(restTimeInput.value);
+                            statusIndicator.className = 'status-indicator resting';
+                        } else {
+                            // Cambiar al siguiente asalto o terminar
+                            currentRound++;
+                            
+                            if (currentRound > parseInt(numRoundsInput.value)) {
+                                clearInterval(timer);
+                                isRunning = false;
+                                statusIndicator.className = 'status-indicator completed';
+                                comboAlert.textContent = 'ENTRENAMIENTO COMPLETADO!';
+                                return;
+                            }
+                            
+                            isFighting = true;
+                            secondsLeft = parseInt(roundTimeInput.value);
+                            statusIndicator.className = 'status-indicator fighting';
+                        }
+                        
+                        updateRoundDisplay();
+                        comboCounter = 0;
+                    }
+                    
+                    updateTimerDisplay();
+                }, 1000);
+            }
+            
+            function pauseTimer() {
+                if (!isRunning) return;
+                
+                clearInterval(timer);
+                isRunning = false;
+                startBtn.disabled = false;
+            }
+            
+            function resetTimer() {
+                clearInterval(timer);
+                isRunning = false;
+                currentRound = 1;
+                isFighting = true;
+                secondsLeft = parseInt(roundTimeInput.value);
+                comboCounter = 0;
+                startBtn.disabled = false;
+                statusIndicator.className = 'status-indicator fighting';
+                comboAlert.textContent = '';
+                
+                updateTimerDisplay();
+                updateRoundDisplay();
+            }
+            
+            function updateTimerDisplay() {
+                const minutes = Math.floor(secondsLeft / 60);
+                const seconds = secondsLeft % 60;
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            function updateRoundDisplay() {
+                totalRounds.textContent = numRoundsInput.value;
+                roundDisplay.textContent = `Asalto: ${currentRound}/${numRoundsInput.value}`;
+            }
+            
+            function showComboAlert() {
+                comboAlert.textContent = '¡COMBINACIÓN AHORA!';
+                
+                // Limpiar la alerta después de 1 segundo
+                setTimeout(() => {
+                    comboAlert.textContent = '';
+                }, 1000);
+            }
+            
+            function playBellSound() {
+                // Crear un sonido de campana
+                const context = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = context.createOscillator();
+                const gainNode = context.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(context.destination);
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 880; // La5
+                gainNode.gain.value = 0.3;
+                
+                oscillator.start();
+                
+                // Parar después de 500ms
+                setTimeout(() => {
+                    oscillator.stop();
+                }, 500);
+            }
+            
+            function playComboSound() {
+                // Crear un sonido de bip
+                const context = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = context.createOscillator();
+                const gainNode = context.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(context.destination);
+                
+                oscillator.type = 'square';
+                oscillator.frequency.value = 1000;
+                gainNode.gain.value = 0.2;
+                
+                oscillator.start();
+                
+                // Parar después de 100ms
+                setTimeout(() => {
+                    oscillator.stop();
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>
